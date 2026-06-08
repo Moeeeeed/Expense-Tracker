@@ -15,7 +15,7 @@ export default function TabLayout() {
   const isDark = store.theme === 'dark';
 
   // 1. Resolve colors using simple if-else blocks instead of inline ternaries
-  let activeColor = '#10b981'; // Light mode active active highlight: Emerald Green
+  let activeColor = '#3b82f6'; // Light mode active active highlight: Blue
   let inactiveColor = '#737373'; // Light mode inactive
   let tabBgColor = '#ffffff'; // White tab bar background
   let tabBorderColor = '#e5e5e5'; // Light gray border
@@ -67,6 +67,12 @@ export default function TabLayout() {
           title: 'Add Expense',
           tabBarIcon: ({ color }) => <TabBarIcon name="plus-circle" color={color} />,
         }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            e.preventDefault();
+            navigation.navigate('two', { id: undefined });
+          },
+        })}
       />
       <Tabs.Screen
         name="list"

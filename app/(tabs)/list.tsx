@@ -1,6 +1,6 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useNavigation, useRouter } from 'expo-router';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 import { ExpenseCard } from '../../src/components/ExpenseCard';
@@ -10,6 +10,7 @@ const CATEGORIES = ['All', 'Food', 'Transport', 'Utilities', 'Entertainment', 'O
 
 export default function ListScreen() {
   const router = useRouter();
+  const navigation = useNavigation();
   const store = useExpenseStore();
   const isDark = store.theme === 'dark';
 
@@ -20,12 +21,13 @@ export default function ListScreen() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
-  // Clear unread badge count when focused
-  useFocusEffect(
-    useCallback(() => {
+  // Clear unread badge count when tab is focused (using standard useNavigation listener)
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
       store.clearUnreadCount();
-    }, [store])
-  );
+    });
+    return unsubscribe;
+  }, [navigation, store]);
 
   // Filter & Sort Logic using beginner-friendly plain statements
   const filteredExpenses = store.expenses.filter((item) => {
@@ -47,7 +49,14 @@ export default function ListScreen() {
 
     // 3. Filter by Date Range
     if (showDateFilter === true) {
+      if (item.date === undefined || item.date === null || item.date === '') {
+        return false;
+      }
+      
       const itemTime = new Date(item.date).getTime();
+      if (isNaN(itemTime) === true) {
+        return false;
+      }
       
       if (startDate.trim() !== '') {
         const startTime = new Date(startDate).getTime();
@@ -94,8 +103,7 @@ export default function ListScreen() {
   let chipBaseStyle = styles.chipLight;
   
   let searchIconColor = '#94a3b8';
-  let dateToggleActiveBg = '#10b981'; // Emerald Green
-  let dateToggleColor = '#10b981';
+  let dateToggleColor = '#3b82f6';
 
   if (isDark === true) {
     containerStyle = styles.bgDark;
@@ -314,8 +322,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   activeDateFilterToggle: {
-    backgroundColor: '#10b981', // Emerald green instead of blue
-    borderColor: '#10b981',
+    backgroundColor: '#3b82f6', // Blue
+    borderColor: '#3b82f6',
   },
   dateFilterPanel: {
     marginHorizontal: 16,
@@ -384,8 +392,8 @@ const styles = StyleSheet.create({
     borderColor: '#262626',
   },
   activeChip: {
-    backgroundColor: '#10b981', // Emerald Green instead of blue
-    borderColor: '#10b981',
+    backgroundColor: '#3b82f6', // Blue
+    borderColor: '#3b82f6',
   },
   categoryChipText: {
     fontSize: 12,

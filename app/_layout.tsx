@@ -3,10 +3,12 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import 'react-native-reanimated';
+import { View, StyleSheet } from 'react-native';
 
-import { useColorScheme } from '@/components/useColorScheme';
+import { useExpenseStore } from '../src/store/useExpenseStore';
+import { CustomSplash } from '../src/components/CustomSplash';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -38,7 +40,7 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
-  if (!loaded) {
+  if (loaded === false) {
     return null;
   }
 
@@ -46,14 +48,36 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
-  const colorScheme = useColorScheme();
+  const store = useExpenseStore();
+
+  // Simple if-else block instead of nested ternaries
+  let navigationTheme = DefaultTheme;
+  if (store.theme === 'dark') {
+    navigationTheme = DarkTheme;
+  }
+
+  const handleSplashComplete = () => {
+    store.setSplashActive(false);
+  };
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-      </Stack>
+    <ThemeProvider value={navigationTheme}>
+      <View style={styles.container}>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+        </Stack>
+
+        {store.isSplashActive === true ? (
+          <CustomSplash onAnimationComplete={handleSplashComplete} />
+        ) : null}
+      </View>
     </ThemeProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, BackHandler, Alert, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
@@ -45,6 +45,32 @@ export default function DashboardScreen() {
     router.push('/two');
   };
 
+  const handleLogout = () => {
+    if (Platform.OS === 'web') {
+      const confirmLogout = window.confirm('Are you sure you want to log out?');
+      if (confirmLogout === true) {
+        router.replace('/');
+        store.setSplashActive(true);
+      }
+    } else {
+      Alert.alert(
+        'Log Out',
+        'Are you sure you want to log out?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Log Out',
+            onPress: () => {
+              router.replace('/');
+              store.setSplashActive(true);
+            }
+          },
+        ],
+        { cancelable: true }
+      );
+    }
+  };
+
   // Determine icon name
   let themeIconName: any = 'moon-o';
   if (isDark === true) {
@@ -68,12 +94,21 @@ export default function DashboardScreen() {
           </Text>
         </View>
 
-        <TouchableOpacity
-          style={[styles.themeToggle, toggleBtnStyle]}
-          onPress={handleToggleTheme}
-        >
-          <FontAwesome name={themeIconName} size={18} color={themeIconColor} />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <TouchableOpacity
+            style={[styles.themeToggle, toggleBtnStyle, { marginRight: 8 }]}
+            onPress={handleLogout}
+          >
+            <FontAwesome name="sign-out" size={18} color={isDark ? '#ffffff' : '#171717'} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.themeToggle, toggleBtnStyle]}
+            onPress={handleToggleTheme}
+          >
+            <FontAwesome name={themeIconName} size={18} color={themeIconColor} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Spending Visual Charts */}
@@ -180,7 +215,7 @@ const styles = StyleSheet.create({
   viewAllText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#10b981', // Emerald green
+    color: '#3b82f6', // Blue
   },
   emptyCardBase: {
     padding: 24,
@@ -206,7 +241,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   addExpenseBtn: {
-    backgroundColor: '#10b981', // Emerald green
+    backgroundColor: '#3b82f6', // Blue
     paddingVertical: 10,
     paddingHorizontal: 18,
     borderRadius: 8,

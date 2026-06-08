@@ -1,13 +1,14 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native';
 import { FormInput } from '../../src/components/FormInput';
 import { useExpenseStore } from '../../src/store/useExpenseStore';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 const CATEGORIES = ['Food', 'Transport', 'Utilities', 'Entertainment', 'Other'];
 const CATEGORY_COLORS: Record<string, string> = {
   Food: '#10b981', // Emerald
-  Transport: '#3b82f6', // Blue
+  Transport: '#ef4444', // Red
   Utilities: '#06b6d4', // Cyan
   Entertainment: '#8b5cf6', // Purple
   Other: '#737373', // Gray
@@ -154,7 +155,11 @@ export default function AddExpenseScreen() {
     setDateError(dErr);
 
     if (hasError === true) {
-      Alert.alert('Validation Failed', 'Please fix the errors in the form before saving.');
+      if (Platform.OS === 'web') {
+        alert('Validation Failed: Please fix the errors in the form before saving.');
+      } else {
+        Alert.alert('Validation Failed', 'Please fix the errors in the form before saving.');
+      }
       return;
     }
 
@@ -162,11 +167,20 @@ export default function AddExpenseScreen() {
 
     if (id !== undefined && id !== '') {
       await store.editExpense(id, title.trim(), parsedAmount, category, date, notes.trim());
-      Alert.alert('Success', 'Expense updated successfully!');
+      if (Platform.OS === 'web') {
+        alert('Success: Expense updated successfully!');
+      } else {
+        Alert.alert('Success', 'Expense updated successfully!');
+      }
+      router.setParams({ id: '' });
       router.push('/list');
     } else {
       await store.addExpense(title.trim(), parsedAmount, category, date, notes.trim());
-      Alert.alert('Success', 'Expense added successfully!');
+      if (Platform.OS === 'web') {
+        alert('Success: Expense added successfully!');
+      } else {
+        Alert.alert('Success', 'Expense added successfully!');
+      }
       
       // Reset form fields
       setTitle('');
@@ -205,9 +219,28 @@ export default function AddExpenseScreen() {
       contentContainerStyle={styles.scrollContent}
       keyboardShouldPersistTaps="handled"
     >
-      <Text style={[styles.header, textPrimaryStyle]}>
-        {headerTitle}
-      </Text>
+      <TouchableOpacity
+        onPress={() => {
+          router.setParams({ id: '' });
+          router.push('/');
+        }}
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          marginBottom: 20,
+          marginTop: 6,
+        }}
+      >
+        <FontAwesome
+          name="chevron-left"
+          size={16}
+          color={isDark ? '#ffffff' : '#171717'}
+          style={{ marginRight: 8 }}
+        />
+        <Text style={[styles.header, textPrimaryStyle, { marginBottom: 0, marginTop: 0 }]}>
+          {headerTitle}
+        </Text>
+      </TouchableOpacity>
 
       {/* Title */}
       <View>
@@ -313,7 +346,13 @@ export default function AddExpenseScreen() {
 
       {/* Cancel Edit Button */}
       {id !== undefined && id !== '' ? (
-        <TouchableOpacity style={styles.cancelButton} onPress={() => router.push('/list')}>
+        <TouchableOpacity
+          style={styles.cancelButton}
+          onPress={() => {
+            router.setParams({ id: '' });
+            router.push('/list');
+          }}
+        >
           <Text style={[styles.cancelButtonText, textSecondaryStyle]}>Cancel Edit</Text>
         </TouchableOpacity>
       ) : null}
@@ -383,7 +422,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
   saveButton: {
-    backgroundColor: '#10b981', // Emerald green
+    backgroundColor: '#3b82f6', // Blue
     paddingVertical: 14,
     borderRadius: 10,
     alignItems: 'center',
