@@ -1,57 +1,85 @@
 import React from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Link, Tabs } from 'expo-router';
-import { Pressable } from 'react-native';
+import { Tabs } from 'expo-router';
+import { useExpenseStore } from '../../src/store/useExpenseStore';
 
-import Colors from '@/constants/Colors';
-import { useColorScheme } from '@/components/useColorScheme';
-import { useClientOnlyValue } from '@/components/useClientOnlyValue';
-
-// You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>['name'];
   color: string;
 }) {
-  return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
+  return <FontAwesome size={22} style={{ marginBottom: -3 }} {...props} />;
 }
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const store = useExpenseStore();
+  const isDark = store.theme === 'dark';
+
+  // 1. Resolve colors using simple if-else blocks instead of inline ternaries
+  let activeColor = '#10b981'; // Light mode active active highlight: Emerald Green
+  let inactiveColor = '#737373'; // Light mode inactive
+  let tabBgColor = '#ffffff'; // White tab bar background
+  let tabBorderColor = '#e5e5e5'; // Light gray border
+  let headerBgColor = '#ffffff';
+  let headerTitleColor = '#171717';
+
+  if (isDark === true) {
+    activeColor = '#ffffff'; // Dark mode active: Plain White
+    inactiveColor = '#737373'; // Dark mode inactive: Slate Gray
+    tabBgColor = '#000000'; // Pure Black background
+    tabBorderColor = '#262626'; // Dark gray border
+    headerBgColor = '#000000'; // Pure Black header background
+    headerTitleColor = '#ffffff'; // Plain White text
+  }
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        // Disable the static render of the header on web
-        // to prevent a hydration error in React Navigation v6.
-        headerShown: useClientOnlyValue(false, true),
-      }}>
+        tabBarActiveTintColor: activeColor,
+        tabBarInactiveTintColor: inactiveColor,
+        tabBarStyle: {
+          backgroundColor: tabBgColor,
+          borderTopColor: tabBorderColor,
+          height: 60,
+          paddingBottom: 8,
+          paddingTop: 8,
+        },
+        headerStyle: {
+          backgroundColor: headerBgColor,
+          borderBottomWidth: 1,
+          borderBottomColor: tabBorderColor,
+        },
+        headerTitleStyle: {
+          fontWeight: '700',
+          color: headerTitleColor,
+        },
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Tab One',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-          headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable>
-                {({ pressed }) => (
-                  <FontAwesome
-                    name="info-circle"
-                    size={25}
-                    color={Colors[colorScheme ?? 'light'].text}
-                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
-                  />
-                )}
-              </Pressable>
-            </Link>
-          ),
+          title: 'Dashboard',
+          tabBarIcon: ({ color }) => <TabBarIcon name="dashboard" color={color} />,
         }}
       />
       <Tabs.Screen
         name="two"
         options={{
-          title: 'Tab Two',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          title: 'Add Expense',
+          tabBarIcon: ({ color }) => <TabBarIcon name="plus-circle" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="list"
+        options={{
+          title: 'All Expenses',
+          tabBarIcon: ({ color }) => <TabBarIcon name="list-alt" color={color} />,
+          tabBarBadge: store.unreadCount > 0 ? store.unreadCount : undefined,
+          tabBarBadgeStyle: {
+            backgroundColor: '#ef4444',
+            color: '#ffffff',
+            fontSize: 10,
+            lineHeight: 14,
+          },
         }}
       />
     </Tabs>
